@@ -1,135 +1,669 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lunix | Pro Script Hub</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
-        body { background: #020202; color: #00ff41; font-family: 'Space Mono', monospace; }
-        .panel { background: #0a0a0a; border: 1px solid #1a1a1a; }
-        .btn { transition: all 0.2s; border-radius: 4px; font-weight: bold; text-transform: uppercase; font-size: 10px; }
-        .btn:active { transform: scale(0.95); }
-        textarea { background: #000 !important; border: 1px solid #111 !important; color: #00ff41 !important; scrollbar-width: thin; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lunix — Script Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#04060a;
+  --bg2:#080d14;
+  --bg3:#0d1520;
+  --panel:#0a1019;
+  --border:#1a2d45;
+  --border2:#0f2035;
+  --accent:#00d4ff;
+  --accent2:#0090cc;
+  --accent3:#00ff88;
+  --red:#ff3355;
+  --yellow:#ffd700;
+  --text:#c8dff0;
+  --text2:#5a7a99;
+  --text3:#2a4560;
+  --glow:0 0 20px rgba(0,212,255,0.3);
+  --glow2:0 0 40px rgba(0,212,255,0.15);
+}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-size:15px;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Scanline overlay */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* Grid background */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── HEADER ── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(4,6,10,0.95);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:56px;
+}
+.logo{
+  font-family:'Orbitron',monospace;
+  font-size:20px;font-weight:900;
+  color:var(--accent);
+  text-shadow:var(--glow);
+  letter-spacing:4px;
+  display:flex;align-items:center;gap:10px;
+}
+.logo-dot{
+  width:8px;height:8px;
+  background:var(--accent3);
+  border-radius:50%;
+  box-shadow:0 0 10px var(--accent3);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+
+.nav{display:flex;gap:4px;}
+.nav-btn{
+  background:none;border:none;
+  color:var(--text2);
+  font-family:'Rajdhani',sans-serif;
+  font-size:13px;font-weight:600;
+  letter-spacing:1px;
+  padding:6px 14px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-transform:uppercase;
+}
+.nav-btn:hover,.nav-btn.active{
+  color:var(--accent);
+  background:rgba(0,212,255,0.08);
+}
+.nav-btn.active{
+  border-bottom:2px solid var(--accent);
+  border-radius:4px 4px 0 0;
+}
+
+/* ── MAIN ── */
+main{
+  position:relative;z-index:1;
+  max-width:1100px;margin:0 auto;
+  padding:28px 20px;
+}
+
+/* ── TABS ── */
+.tab{display:none;}
+.tab.active{display:block;}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin-bottom:28px;
+}
+.stat-card{
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+}
+.stat-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0.6;
+}
+.stat-val{
+  font-family:'Orbitron',monospace;
+  font-size:26px;font-weight:700;
+  color:var(--accent);
+  text-shadow:0 0 15px rgba(0,212,255,0.5);
+  line-height:1;
+}
+.stat-label{
+  font-size:11px;letter-spacing:2px;
+  color:var(--text2);
+  text-transform:uppercase;
+  margin-top:4px;
+}
+
+/* ── PANEL ── */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:20px;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;
+  border-bottom:1px solid var(--border2);
+  background:rgba(0,212,255,0.03);
+}
+.panel-title{
+  font-family:'Orbitron',monospace;
+  font-size:12px;letter-spacing:3px;
+  color:var(--accent);
+  text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.panel-title::before{
+  content:'▶';font-size:8px;
+  color:var(--accent3);
+}
+.panel-body{padding:20px;}
+
+/* ── FORMS ── */
+input,textarea,select{
+  width:100%;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--text);
+  font-family:'Share Tech Mono',monospace;
+  font-size:13px;
+  padding:10px 14px;
+  outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  resize:vertical;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--accent2);
+  box-shadow:0 0 0 2px rgba(0,212,255,0.1);
+}
+label{
+  display:block;
+  font-size:11px;letter-spacing:2px;
+  color:var(--text2);
+  text-transform:uppercase;
+  margin-bottom:6px;
+  margin-top:14px;
+}
+label:first-child{margin-top:0;}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  border:none;border-radius:6px;
+  font-family:'Rajdhani',sans-serif;
+  font-size:13px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#0078aa,#00d4ff);
+  color:#000;
+  box-shadow:0 0 20px rgba(0,212,255,0.3);
+}
+.btn-primary:hover{
+  box-shadow:0 0 30px rgba(0,212,255,0.5);
+  transform:translateY(-1px);
+}
+.btn-ghost{
+  background:rgba(0,212,255,0.06);
+  border:1px solid var(--border);
+  color:var(--text2);
+}
+.btn-ghost:hover{
+  border-color:var(--accent2);
+  color:var(--accent);
+}
+.btn-danger{
+  background:rgba(255,51,85,0.1);
+  border:1px solid rgba(255,51,85,0.3);
+  color:var(--red);
+}
+.btn-danger:hover{background:rgba(255,51,85,0.2);}
+.btn-green{
+  background:rgba(0,255,136,0.1);
+  border:1px solid rgba(0,255,136,0.3);
+  color:var(--accent3);
+}
+.btn-green:hover{background:rgba(0,255,136,0.2);}
+.btn-sm{padding:6px 14px;font-size:11px;}
+
+/* ── SCRIPT CARDS ── */
+.script-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:14px;
+}
+.script-card{
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:16px;
+  transition:border-color 0.2s,transform 0.2s;
+  position:relative;
+  overflow:hidden;
+}
+.script-card::after{
+  content:'';
+  position:absolute;top:0;left:0;
+  width:3px;height:100%;
+  background:var(--accent);
+  opacity:0.6;
+}
+.script-card:hover{
+  border-color:var(--accent2);
+  transform:translateY(-2px);
+}
+.script-name{
+  font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:700;
+  color:var(--accent);
+  margin-bottom:4px;
+  padding-left:10px;
+}
+.script-meta{
+  font-size:11px;color:var(--text2);
+  margin-bottom:12px;
+  padding-left:10px;
+}
+.script-actions{display:flex;gap:6px;flex-wrap:wrap;padding-left:10px;}
+
+/* ── CODE BOX ── */
+.code-box{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:12px 16px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+  color:var(--accent3);
+  word-break:break-all;
+  position:relative;
+  margin-top:10px;
+}
+.code-box .copy-btn{
+  position:absolute;top:8px;right:8px;
+}
+
+/* ── OBFUSCATOR ── */
+.obf-levels{display:flex;gap:8px;margin-bottom:16px;}
+.obf-level{
+  flex:1;padding:10px;text-align:center;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:6px;cursor:pointer;
+  font-size:12px;font-weight:700;letter-spacing:1px;
+  color:var(--text2);transition:all 0.2s;
+  text-transform:uppercase;
+}
+.obf-level.selected{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:rgba(0,212,255,0.08);
+  box-shadow:0 0 10px rgba(0,212,255,0.2);
+}
+.obf-level[data-level="medium"].selected{border-color:var(--yellow);color:var(--yellow);background:rgba(255,215,0,0.08);}
+.obf-level[data-level="max"].selected{border-color:var(--red);color:var(--red);background:rgba(255,51,85,0.08);}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--bg3);
+  border:1px solid var(--accent2);
+  border-radius:8px;
+  padding:12px 20px;
+  font-size:13px;font-weight:600;
+  color:var(--accent);
+  box-shadow:var(--glow2);
+  z-index:9999;
+  transform:translateY(80px);opacity:0;
+  transition:all 0.3s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+  letter-spacing:1px;
+}
+#toast.show{transform:translateY(0);opacity:1;}
+
+/* ── AUTH MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(8px);
+  z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:32px;
+  width:100%;max-width:380px;
+  position:relative;
+}
+.modal-title{
+  font-family:'Orbitron',monospace;
+  font-size:16px;font-weight:700;
+  color:var(--accent);
+  text-align:center;
+  margin-bottom:24px;
+  letter-spacing:3px;
+}
+
+/* ── BADGE ── */
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:3px;
+  font-size:10px;letter-spacing:1px;
+  font-weight:700;text-transform:uppercase;
+}
+.badge-blue{background:rgba(0,212,255,0.15);color:var(--accent);}
+.badge-green{background:rgba(0,255,136,0.15);color:var(--accent3);}
+.badge-red{background:rgba(255,51,85,0.15);color:var(--red);}
+
+/* ── OWNER PANEL ── */
+.owner-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;
+  background:rgba(255,215,0,0.1);
+  border:1px solid rgba(255,215,0,0.3);
+  border-radius:4px;
+  font-size:11px;font-weight:700;letter-spacing:2px;
+  color:var(--yellow);
+  text-transform:uppercase;
+}
+
+/* ── DIVIDER ── */
+.divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:20px 0;
+}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  header{padding:0 14px;}
+  .logo{font-size:16px;letter-spacing:2px;}
+  .nav-btn{padding:6px 10px;font-size:11px;}
+  main{padding:16px 12px;}
+  .stat-val{font-size:20px;}
+  .script-grid{grid-template-columns:1fr;}
+  .obf-levels{flex-direction:column;}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.tab.active{animation:fadeIn 0.3s ease;}
+@keyframes glitch{
+  0%,100%{text-shadow:var(--glow);}
+  25%{text-shadow:-2px 0 var(--red),2px 0 var(--accent3);}
+  75%{text-shadow:2px 0 var(--red),-2px 0 var(--accent3);}
+}
+.logo:hover{animation:glitch 0.4s;}
+
+/* ── LOADSTRING BOX ── */
+.loadstring-box{
+  background:var(--bg);
+  border:1px solid rgba(0,255,136,0.2);
+  border-left:3px solid var(--accent3);
+  border-radius:6px;
+  padding:14px 16px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+  color:var(--accent3);
+  word-break:break-all;
+  margin-top:12px;
+  position:relative;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;padding:48px 20px;
+  color:var(--text3);
+}
+.empty-state .icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:13px;letter-spacing:1px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent2);}
+</style>
 </head>
-<body class="p-4 sm:p-8">
+<body>
 
-    <div class="max-w-4xl mx-auto flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-black text-white italic tracking-tighter">LUNIX<span class="text-green-500">_PRO</span></h1>
-        <button onclick="location.reload()" class="btn border border-red-900 px-3 py-1 text-red-500">Refresh / New</button>
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">⬡ OWNER ACCESS</div>
+    <label>Password</label>
+    <input type="password" id="authPass" placeholder="Enter owner password..." />
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="doAuth()">AUTHENTICATE</button>
+      <button class="btn btn-ghost" onclick="closeAuth()">CANCEL</button>
+    </div>
+    <div id="authErr" style="color:var(--red);font-size:12px;margin-top:10px;text-align:center;display:none;">
+      ⚠ Invalid password
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    LUNIX
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showTab('dashboard',this)">Dashboard</button>
+    <button class="nav-btn" onclick="showTab('scripts',this)">Scripts</button>
+    <button class="nav-btn" onclick="showTab('obfuscator',this)">Obfuscator</button>
+    <button class="nav-btn" onclick="showTab('owner',this)">Owner</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ══════════ DASHBOARD TAB ══════════ -->
+<div id="tab-dashboard" class="tab active">
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-scripts">0</div>
+      <div class="stat-label">Scripts Hosted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-loads">0</div>
+      <div class="stat-label">Total Loads</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-users">—</div>
+      <div class="stat-label">Hub Status</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--accent3);font-size:18px;" id="stat-version">v1.0</div>
+      <div class="stat-label">Version</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Quick Access</div>
+    </div>
+    <div class="panel-body">
+      <div id="quickScripts" class="script-grid">
+        <div class="empty-state">
+          <div class="icon">⬡</div>
+          <p>No scripts yet — add some in the Scripts tab</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">About Lunix</div>
+    </div>
+    <div class="panel-body" style="font-size:13px;line-height:1.8;color:var(--text2);">
+      <span class="badge badge-blue">LUNIX HUB</span> &nbsp; Script hosting platform by <b style="color:var(--accent)">xyth</b>.<br>
+      Host your Lua scripts, get instant raw links, generate loadstring commands for Delta executor, and obfuscate your code — all in one place.<br><br>
+      <span class="badge badge-green">FIREBASE</span> &nbsp; Scripts are stored in Firebase Firestore. Owner-only write access enforced via security rules.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCRIPTS TAB ══════════ -->
+<div id="tab-scripts" class="tab">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">All Scripts</div>
+      <div id="scriptAuthBadge" style="display:none;" class="owner-badge">★ OWNER</div>
+    </div>
+    <div class="panel-body">
+      <div id="scriptList" class="script-grid">
+        <div class="empty-state">
+          <div class="icon">⬡</div>
+          <p>Loading scripts...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ OBFUSCATOR TAB ══════════ -->
+<div id="tab-obfuscator" class="tab">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Lua Obfuscator</div>
+      <span class="badge badge-blue">CLIENT-SIDE</span>
+    </div>
+    <div class="panel-body">
+      <div class="obf-levels">
+        <div class="obf-level selected" data-level="light" onclick="selectLevel('light',this)">⚡ Light</div>
+        <div class="obf-level" data-level="medium" onclick="selectLevel('medium',this)">🔥 Medium</div>
+        <div class="obf-level" data-level="max" onclick="selectLevel('max',this)">☠ Max</div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:14px;letter-spacing:1px;" id="obfDesc">
+        Light: Variable renaming + string encoding
+      </div>
+      <label>Input — Paste your Lua script</label>
+      <textarea id="obfInput" rows="10" placeholder="-- paste your lua script here..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="obfuscate()">⬡ OBFUSCATE</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('obfInput').value=''">CLEAR</button>
+        <button class="btn btn-green btn-sm" onclick="swapObf()" title="Copy output back to input">↺ REOBF</button>
+      </div>
+      <label>Output — Obfuscated script</label>
+      <textarea id="obfOutput" rows="10" placeholder="-- obfuscated output will appear here..." readonly></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" onclick="copyObf()">COPY OUTPUT</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadObf()">DOWNLOAD .lua</button>
+        <span id="obfStats" style="font-size:11px;color:var(--text2);align-self:center;margin-left:auto;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ OWNER TAB ══════════ -->
+<div id="tab-owner" class="tab">
+  <div id="ownerLocked">
+    <div class="panel">
+      <div class="panel-body" style="text-align:center;padding:40px;">
+        <div style="font-size:36px;margin-bottom:16px;">⬡</div>
+        <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--accent);letter-spacing:3px;margin-bottom:8px;">OWNER PANEL</div>
+        <div style="color:var(--text2);font-size:12px;margin-bottom:20px;">Authenticate to manage scripts</div>
+        <button class="btn btn-primary" onclick="showAuth()">AUTHENTICATE</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ownerUnlocked" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="owner-badge">★ OWNER MODE ACTIVE</div>
+      <button class="btn btn-ghost btn-sm" onclick="lockOwner()">LOCK</button>
     </div>
 
-    <div class="max-w-4xl mx-auto grid grid-cols-1 gap-6">
-        
-        <div class="panel p-5 rounded-lg">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-[10px] text-gray-500 uppercase font-bold">Input Terminal</span>
-                <input type="file" id="fileInput" class="hidden" accept=".lua,.txt">
-                <button onclick="document.getElementById('fileInput').click()" class="text-blue-400 text-[10px] hover:underline">UPLOAD .LUA FILE</button>
-            </div>
-            
-            <textarea id="main-input" class="w-full h-64 p-4 text-sm rounded outline-none" placeholder="-- Paste or Upload your script here..."></textarea>
-            
-            <div class="grid grid-cols-2 gap-2 mt-4">
-                <button onclick="processScript('obfuscate')" class="btn bg-green-600 text-black py-3">Obfuscate & Save</button>
-                <button onclick="processScript('raw')" class="btn bg-white text-black py-3">Save as Raw (Pastebin Mode)</button>
-            </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Upload New Script</div>
+      </div>
+      <div class="panel-body">
+        <label>Script Name</label>
+        <input type="text" id="uploadName" placeholder="e.g. Universal ESP by xyth" />
+        <label>Game</label>
+        <input type="text" id="uploadGame" placeholder="e.g. Da Hood / Universal" />
+        <label>Description</label>
+        <input type="text" id="uploadDesc" placeholder="Short description..." />
+        <label>Lua Script</label>
+        <textarea id="uploadCode" rows="12" placeholder="-- paste your lua script here..."></textarea>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="uploadScript()">⬆ UPLOAD SCRIPT</button>
+          <button class="btn btn-ghost" onclick="clearUpload()">CLEAR</button>
         </div>
-
-        <div id="output-area" class="hidden panel p-5 rounded-lg border-green-500/50 animate-pulse">
-            <span class="text-[10px] text-green-500 font-bold uppercase block mb-3">Generated Result</span>
-            
-            <textarea id="main-output" readonly class="w-full h-40 p-4 text-xs rounded mb-4"></textarea>
-            
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="copyText('main-output')" class="btn bg-gray-800 text-white py-2">Copy All</button>
-                <button onclick="downloadScript()" class="btn bg-gray-800 text-white py-2">Download .lua</button>
-                <button id="loadstring-btn" onclick="copyLoadstring()" class="btn bg-blue-600 text-white py-2">Copy Loadstring</button>
-            </div>
-        </div>
-
+      </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Manage Scripts</div>
+      </div>
+      <div class="panel-body">
+        <div id="manageList" class="script-grid">
+          <div class="empty-state"><div class="icon">⬡</div><p>Loading...</p></div>
+        </div>
+      </div>
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "your-project.firebaseapp.com",
-            projectId: "your-project",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "12345",
-            appId: "1:12345:web:6789"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // --- HANDLE RAW VIEW FOR EXECUTORS ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const rawId = urlParams.get('v');
-        if (rawId) {
-            const docRef = doc(db, "scripts", rawId);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                document.body.innerHTML = `<pre style="white-space:pre-wrap; word-wrap:break-word;">${docSnap.data().content}</pre>`;
-                document.body.style.background = "white"; document.body.style.color = "black";
-            }
-        }
-
-        // --- FILE UPLOAD HANDLER ---
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (event) => document.getElementById('main-input').value = event.target.result;
-            reader.readAsText(file);
-        });
-
-        // --- PROCESS & SAVE ---
-        window.processScript = async (type) => {
-            const input = document.getElementById('main-input').value;
-            if(!input) return alert("System: Input Empty");
-
-            let finalCode = input;
-            if(type === 'obfuscate') {
-                finalCode = `-- Lunix Protected\nloadstring("${input.split('').map(c => `\\${c.charCodeAt(0)}`).join('')}")()`;
-            }
-
-            const id = Math.random().toString(36).substring(2, 9);
-            await setDoc(doc(db, "scripts", id), { content: finalCode });
-
-            const loadstring = `loadstring(game:HttpGet("${window.location.origin}${window.location.pathname}?v=${id}"))()`;
-            
-            document.getElementById('main-output').value = finalCode;
-            window.currentLoadstring = loadstring;
-            document.getElementById('output-area').classList.remove('hidden');
-            window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-        };
-
-        // --- UTILS ---
-        window.copyText = (id) => {
-            const el = document.getElementById(id);
-            el.select();
-            navigator.clipboard.writeText(el.value);
-            alert("Copied Full Script!");
-        };
-
-        window.copyLoadstring = () => {
-            navigator.clipboard.writeText(window.currentLoadstring);
-            alert("Loadstring Copied for Delta!");
-        };
-
-        window.downloadScript = () => {
-            const text = document.getElementById('main-output').value;
-            const blob = new Blob([text], { type: "text/plain" });
-            const anchor = document.createElement("a");
-            anchor.download = "Lunix_Script.lua";
-            anchor.href = window.URL.createObjectURL(blob);
-            anchor.click();
-        };
-    </script>
-</body>
-</html>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Firebase Config</div>
+      </div>
+      <div class="panel-body" style="font-size:12px;color:var(--text2);line-height:1.9;">
+        Replace the Firebase config in the script with your own from the Firebase console.<br>
+        <span style="color:var(--accent3);">Project Settings → Your Apps → Firebase SDK snippet → Config</span>
+        <div class="divider"></div>
+        <b style="color:var(--accent);">Firestore Security Rules</b><br>
+        Paste these rules in <span style="color:var(--accent3);">Firebase Console → Firestore → Rules</span>:
+        <div class="code-box" style="color:var(--text);margin-top:10px;white-space:pre;overflow-x:auto;font-size:11px;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /scripts/{scriptId} {
+      // Anyone can read scripts (for loadstring)
+      allow read: true;
+      // Only authenticated owner can write/delete
+      allow write, delete: if request.auth != null
+        && request.auth.token.email == "YOUR_EMAIL@gmail.com";
+    }
+    match /stats/{doc} {
+      allow read: true;
+      allow write: if true; // load counter
+    }
+  }
+}</div>
+        <div class="divider"
