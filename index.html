@@ -517,6 +517,7 @@ input[type="file"]{padding:6px;cursor:pointer;font-family:'Rajdhani',sans-serif;
           <div style="display:flex;gap:6px;">
             <button class="btn btn-ghost btn-sm" onclick="copyRawSD()">COPY</button>
             <button class="btn btn-ghost btn-sm" onclick="downloadRawSD()">DOWNLOAD</button>
+            <button class="btn btn-ghost btn-sm" onclick="openRawTab()">OPEN RAW</button>
             <button class="btn btn-ghost btn-sm" onclick="copyLinkSD()">COPY LINK</button>
           </div>
         </div>
@@ -841,6 +842,14 @@ async function delScript(id){
   catch(e){toast('✗ Failed','var(--red)');}
 }
 
+function openRawTab(){
+  const s = scripts.find(x=>x.id===currentScriptId); if(!s) return;
+  const code = s.code || '-- no code';
+  const name = s.name || 'script';
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${name} — Raw</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#04060a;color:#00ff88;font-family:'Courier New',monospace;font-size:13px;line-height:1.7;padding:20px;}pre{white-space:pre-wrap;word-break:break-all;}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #0c1a28;}.title{color:#00d4ff;font-size:14px;letter-spacing:2px;}.copy-btn{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:#00d4ff;padding:6px 14px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:2px;}.copy-btn:hover{background:rgba(0,212,255,0.2);}</style></head><body><div class="top"><div class="title">-- ${name}.lua</div><button class="copy-btn" onclick="navigator.clipboard.writeText(document.querySelector('pre').textContent).then(()=>this.textContent='COPIED!')">COPY</button></div><pre>${code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`;
+  const blob = new Blob([html], {type:'text/html'});
+  window.open(URL.createObjectURL(blob), '_blank');
+}
 function copyRawSD(){
   const code = document.getElementById('sdRawCode').textContent;
   navigator.clipboard.writeText(code).then(()=>toast('✓ Code copied','var(--accent3)'));
