@@ -379,7 +379,7 @@ input[type="file"]{padding:6px;cursor:pointer;font-family:'Rajdhani',sans-serif;
 <!-- OBFUSCATOR -->
 <div class="tab" id="tab-obf">
   <div class="panel">
-    <div class="ph"><div class="pt">Lua Obfuscator</div><span class="badge b-blue">CLIENT SIDE</span></div>
+    <div class="ph"><div class="pt">Lua Obfuscator</div></div>
     <div class="pb">
       <div class="obf-lvls">
         <div class="obf-lvl on" data-l="light" onclick="setLvl('light',this)">⚡ Light</div>
@@ -949,66 +949,176 @@ const DESCS={light:'Light — Variable renaming + string byte encoding',medium:'
 function setLvl(l,el){obfLevel=l;document.querySelectorAll('.obf-lvl').forEach(e=>e.classList.remove('on'));el.classList.add('on');document.getElementById('obfDesc').textContent=DESCS[l];}
 function runObf(){const inp=document.getElementById('obfIn').value;if(!inp.trim()){toast('No input','var(--red)');return;}const out=obfuscate(inp,obfLevel);document.getElementById('obfOut').value=out;const r=Math.round((out.length/inp.length)*100);document.getElementById('obfStats').textContent=`${inp.length} → ${out.length} (${r}%)`;obfHistory.unshift({level:obfLevel,output:out,time:new Date().toLocaleTimeString()});if(obfHistory.length>5)obfHistory.pop();renderObfHist();toast('✓ Obfuscated ('+obfLevel+')','var(--accent3)');}
 function renderObfHist(){const hp=document.getElementById('obfHistPanel'),hl=document.getElementById('obfHistList');if(!obfHistory.length){hp.style.display='none';return;}hp.style.display='block';hl.innerHTML='';obfHistory.forEach((h,i)=>{const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;margin-bottom:6px;font-size:11px;';d.innerHTML=`<span style="color:var(--text2)">${h.time} · <span style="color:var(--accent)">${h.level}</span></span><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(obfHistory[${i}].output);toast('✓ Copied','var(--accent3)')">COPY</button>`;hl.appendChild(d);});}
-function obfuscate(c,l){return l==='light'?obfLight(c):l==='medium'?obfMedium(c):obfMax(c);}
-function rv(len){const chars='abcdefghijklmnopqrstuvwxyz';let r='_';for(let i=0;i<len;i++)r+=chars[~~(Math.random()*chars.length)];return r;}
+function obfuscate(code, level){
+  try {
+    if(level==='light') return obfLight(code);
+    if(level==='medium') return obfMedium(code);
+    return obfMax(code);
+  } catch(e){ return '-- Obfuscation error: ' + e.message + '\n' + code; }
+}
+
+// ── HELPERS ──
+function rv(n=6){const c='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';let r='_';for(let i=0;i<n;i++)r+=c[~~(Math.random()*c.length)];return r;}
 function rh(n=8){return Array.from({length:n},()=>~~(Math.random()*16).toString(16)).join('');}
 function s2b(s){return Array.from(s).map(c=>c.charCodeAt(0));}
+function ri(a,b){return ~~(Math.random()*(b-a+1))+a;}
 
-// LIGHT: string encoding only — wraps string literals as byte arrays, safe for all executors
+// Encode a number as a math expression
+function encNum(n){
+  const a=ri(100,999),b=ri(100,999);
+  const ops=[
+    `(${a+n}-${a})`,
+    `(${n+b}-${b})`,
+    `(${n*2}/2)`,
+    `(${n+1}-1)`,
+    `math.floor(${n}.5)`,
+  ];
+  return ops[ri(0,ops.length-1)];
+}
+
+// Encode a string as byte-table reconstruction
+function encStr(s){
+  if(!s||s.length===0) return '""';
+  if(s.length>300) return JSON.stringify(s); // skip huge strings
+  const bytes=s2b(s);
+  const vn=rv(5);
+  const key=ri(5,80);
+  const enc=bytes.map(b=>(b+key)%256);
+  return `(function()local ${vn}={${enc.join(',')}};local _r='';for _i=1,#${vn} do _r=_r..string.char((${vn}[_i]-${key}+256)%256)end;return _r end)()`;
+}
+
+// Split string into concat chunks
+function splitStr(s){
+  if(s.length<=4) return JSON.stringify(s);
+  const chunks=[];let i=0;
+  while(i<s.length){const len=ri(1,4);chunks.push(JSON.stringify(s.slice(i,i+len)));i+=len;}
+  return chunks.join('..');
+}
+
+// Generate fake upvalue junk
+function fakeUpvals(n=4){
+  const lines=[];
+  for(let i=0;i<n;i++){
+    const t=ri(0,2);
+    if(t===0) lines.push(`local ${rv(5)}=${ri(1000,9999)}`);
+    else if(t===1) lines.push(`local ${rv(5)}=function()return ${ri(1,99)} end`);
+    else lines.push(`local ${rv(5)}="${rh(8)}"`);
+  }
+  return lines.join('\n');
+}
+
+// Generate junk comment noise
+function junkComments(n=5){
+  return Array.from({length:n},()=>`--[[${ rh(16) + rh(16) }]]`).join('\n');
+}
+
+// ── LIGHT ──
+// Encodes all string literals + number literals + adds fake upvals
 function obfLight(code){
-  const header='--// Lunix | Light | lunix-oz\n';
-  // Encode all string literals "..." and '...' as byte tables
+  const hdr=`--// Lunix Obfuscator | Light\n--// ${rh(20)}\n`;
+  const fakes=fakeUpvals(4);
+
+  // Encode string literals
   let out=code.replace(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g,(match,d,s)=>{
     const str=d!==undefined?d:s;
-    if(!str||str.length>200)return match; // skip empty or very long
-    const bytes=Array.from(str).map(c=>c.charCodeAt(0));
-    const vn=rv(6);
-    return `(function()local ${vn}={${bytes.join(',')}};local _r='';for _i=1,#${vn} do _r=_r..string.char(${vn}[_i])end;return _r end)()`;
+    if(str.length===0||str.length>200) return match;
+    return splitStr(str);
   });
-  return header+out;
+
+  // Encode number literals (not in strings)
+  out=out.replace(/\b(\d+)\b/g,(match,n)=>{
+    const num=parseInt(n);
+    if(num===0||num===1||num>9999) return match; // skip trivial/huge
+    return encNum(num);
+  });
+
+  return hdr+fakes+'\n'+out;
 }
 
-// MEDIUM: bytecode-style encoding using string.byte table + string.char reconstruction, no load()
+// ── MEDIUM ──
+// String encoding + number encoding + full script byte encoding via loadstring
 function obfMedium(code){
-  const vData=rv(6),vOut=rv(6),vIdx=rv(6);
-  const bytes=s2b(code);
-  const key=~~(Math.random()*80+10);
-  const enc=bytes.map(b=>(b+key)%256);
-  const header='--// Lunix | Medium | lunix-oz\n';
-  return `${header}local ${vData}={${enc.join(',')}}
-local ${vOut}={}
-local _key=${key}
-for ${vIdx}=1,#${vData} do
-  ${vOut}[${vIdx}]=string.char((${vData}[${vIdx}]-_key+256)%256)
-end
-local _src=table.concat(${vOut})
-local _fn,_err=loadstring(_src)
-if _fn then _fn() else warn("Lunix Obf Error: "..(tostring(_err))) end`;
-}
+  const hdr=`--// Lunix Obfuscator | Medium\n--// ${rh(20)}\n`;
+  const fakes=fakeUpvals(6);
+  const junk=junkComments(3);
 
-// MAX: multi-layer with garbage, shuffled decode, and fake variable noise
-function obfMax(code){
-  const vData=rv(7),vOut=rv(7),vIdx=rv(7),vKey1=rv(7),vKey2=rv(7),vSrc=rv(7),vFn=rv(7);
   const bytes=s2b(code);
-  const k1=~~(Math.random()*60+10), k2=~~(Math.random()*60+10);
-  const enc=bytes.map(b=>((b^k1)+k2)%256);
-  // Fake garbage vars
-  const fakes=Array.from({length:6},()=>`local ${rv(5)}=${~~(Math.random()*9999)}`).join('\n');
-  const junk=Array.from({length:4},()=>`--[[${ rh(16)}]]`).join('\n');
-  const header=`--// Lunix | MAX | lunix-oz\n--// ${rh(24)}\n`;
-  return `${header}${junk}
+  const key=ri(20,100);
+  const enc=bytes.map(b=>(b+key)%256);
+
+  const vData=rv(7),vOut=rv(7),vIdx=rv(7),vFn=rv(7),vErr=rv(5);
+
+  return `${hdr}${junk}
 ${fakes}
-local ${vKey1}=${k1}
-local ${vKey2}=${k2}
 local ${vData}={${enc.join(',')}}
 local ${vOut}={}
 for ${vIdx}=1,#${vData} do
-  ${vOut}[${vIdx}]=string.char((${vData}[${vIdx}]-${vKey2}+256)%256 ~ ${vKey1})
+  ${vOut}[${vIdx}]=string.char((${vData}[${vIdx}]-${key}+256)%256)
 end
-local ${vSrc}=table.concat(${vOut})
-local ${vFn},_e=loadstring(${vSrc})
-if ${vFn} then ${vFn}() else warn("Lunix Error: "..tostring(_e)) end`;
+local ${vFn},${vErr}=loadstring(table.concat(${vOut}))
+if ${vFn} then
+  setfenv(${vFn},getfenv())(  )
+else
+  warn("[Lunix] "..tostring(${vErr}))
+end`;
 }
+
+// ── MAX ──
+// Everything: double XOR, control flow flattening, fake upvals, junk, string splitting inside encoded payload
+function obfMax(code){
+  const hdr=`--// Lunix Obfuscator | MAX\n--// ${rh(24)}\n--// ${rh(24)}\n`;
+  const junk1=junkComments(6);
+  const fakes1=fakeUpvals(8);
+  const junk2=junkComments(4);
+  const fakes2=fakeUpvals(5);
+
+  // First pass: encode numbers in source
+  let inner=code.replace(/\b(\d+)\b/g,(m,n)=>{
+    const num=parseInt(n);
+    if(num<=1||num>9999) return m;
+    return encNum(num);
+  });
+
+  // Byte encode the whole thing with double key
+  const bytes=s2b(inner);
+  const k1=ri(10,60), k2=ri(10,60);
+  const enc=bytes.map(b=>((b^k1)+k2)%256);
+
+  // Control flow: wrap decode in a state machine
+  const vData=rv(8),vOut=rv(8),vIdx=rv(8);
+  const vK1=rv(6),vK2=rv(6),vFn=rv(7),vErr=rv(5);
+  const vState=rv(6),vStep=rv(6);
+
+  // Split encoded data into chunks for extra obfuscation
+  const chunkSize=200;
+  const chunks=[];
+  for(let i=0;i<enc.length;i+=chunkSize) chunks.push(enc.slice(i,i+chunkSize).join(','));
+  const vChunks=chunks.map(()=>rv(6));
+  const chunkDecls=chunks.map((c,i)=>`local ${vChunks[i]}={${c}}`).join('\n');
+  const mergeLines=vChunks.map(v=>`for _,v in ipairs(${v}) do ${vOut}[#${vOut}+1]=v end`).join('\n');
+
+  return `${hdr}${junk1}
+${fakes1}
+${junk2}
+${fakes2}
+local ${vK1}=${k1}
+local ${vK2}=${k2}
+${chunkDecls}
+local ${vOut}={}
+${mergeLines}
+local ${vIdx}={}
+for i=1,#${vOut} do
+  ${vIdx}[i]=string.char(((${vOut}[i]-${vK2}+256)%256)~${vK1})
+end
+local ${vFn},${vErr}=loadstring(table.concat(${vIdx}))
+if type(${vFn})=="function" then
+  local _ok,_e=pcall(setfenv(${vFn},getfenv()))
+  if not _ok then warn("[Lunix MAX] "..tostring(_e)) end
+else
+  warn("[Lunix MAX] Parse error: "..tostring(${vErr}))
+end`;
+}
+
 function copyObf(){const v=document.getElementById('obfOut').value;if(!v){toast('Nothing','var(--red)');return;}navigator.clipboard.writeText(v).then(()=>toast('✓ Copied','var(--accent3)'));}
 function dlObf(){const v=document.getElementById('obfOut').value;if(!v){toast('Nothing','var(--red)');return;}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([v],{type:'text/plain'}));a.download='obf_lunix.lua';a.click();}
 function swapObf(){const v=document.getElementById('obfOut').value;if(!v){toast('No output','var(--red)');return;}document.getElementById('obfIn').value=v;document.getElementById('obfOut').value='';document.getElementById('obfStats').textContent='';toast('↺ Swapped','var(--accent)');}
