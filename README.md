@@ -1,23 +1,12 @@
 <div align="center">
 
-```
-██╗     ██╗   ██╗███╗   ██╗██╗██╗  ██╗
-██║     ██║   ██║████╗  ██║██║╚██╗██╔╝
-██║     ██║   ██║██╔██╗ ██║██║ ╚███╔╝ 
-██║     ██║   ██║██║╚██╗██║██║ ██╔██╗ 
-███████╗╚██████╔╝██║ ╚████║██║██╔╝ ██╗
-╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
-```
+# Lunix
 
-**Free Roblox Script Hub**  
-*Built by yuki · discord: y4zr*
+**The community's script hub.**
 
-![Status](https://img.shields.io/badge/status-live-brightgreen?style=flat-square&labelColor=0d1117)
-![Version](https://img.shields.io/badge/version-2.1-00d4ff?style=flat-square&labelColor=0d1117)
-![License](https://img.shields.io/badge/license-free-00ff88?style=flat-square&labelColor=0d1117)
-![Backend](https://img.shields.io/badge/backend-Firebase-orange?style=flat-square&labelColor=0d1117)
+Free Roblox scripts. No ads. No paywalls. No sketchy links.
 
-**[→ Open Lunix](https://l9ep.github.io/Linux.obfuscator/)**
+[Open Lunix](https://l9ep.github.io/Linux.obfuscator/)
 
 </div>
 
@@ -25,60 +14,43 @@
 
 ## What is Lunix
 
-Lunix is a free Roblox script hub. One clean place to find scripts, share your own, and tools to help you work with Lua — no ads, no paywalls, no sketchy downloads.
+Lunix is a place where Roblox players can find scripts, share their own, and use tools to work with Lua. It's free and always will be. No accounts required to browse, no payment to access anything.
 
 ---
 
-## Features
+## Scripts
 
-**Scripts**
-- Browse all scripts with banner images
-- Search by name, filter by game
-- Tap any script to open the full detail page with description and comments
-- Copy raw Lua code instantly
-- Upload via paste or .lua file directly from your device
-- Anyone with an account can upload
+Browse scripts for any Roblox game. Every script has a name, game tag, description, and the full raw code you can copy or download. You can also open the raw code in a clean separate tab, or copy a direct link to share with someone.
 
-**Comments**
-- Leave comments on any script
-- Like comments with ❤
-- Reply in threads
-- Sign in required to interact
-
-**Profiles**
-- Username, profile picture, bio
-- View your upload count and join date
-- Change username once per week
-
-**Obfuscator**
-- Three levels — Light, Medium, Max
-- Runs fully client side, nothing is sent anywhere
-- History of last 5 obfuscations
-- Download output as .lua file
-
-**Info**
-- About page explaining what Lunix is and who built it
-
-**Guest Mode**
-- Browse and use the obfuscator without an account
+If you have an account you can upload your own scripts — paste the code directly or upload a .lua file from your device. Scripts go through a verification system where verified ones get a green badge meaning they've been checked and confirmed working and clean.
 
 ---
 
-## Obfuscator Levels
+## Obfuscator
 
-| Level | Method |
-|-------|--------|
-| ⚡ Light | Variable renaming + string byte encoding |
-| 🔥 Medium | XOR encryption wrapped in `load()` |
-| ☠ Max | Double XOR + garbage injection + multi-layer wrapping |
+A built in Lua obfuscator with three levels.
+
+**Light** hides your strings and numbers but keeps the script structure the same. Fast and safe for any executor.
+
+**Medium** encodes your entire script as a number table and rebuilds it at runtime. Nobody can read the code just by looking at it.
+
+**Max** is the strongest option. Double encoded, split into chunks, fake variables injected everywhere, randomised on every run. Two obfuscations of the same script will look completely different.
+
+Everything runs in your browser. Nothing gets sent anywhere.
 
 ---
 
-## Stack
+## Accounts
 
-- HTML, CSS, vanilla JavaScript
-- Firebase Firestore + Firebase Auth
-- GitHub Pages hosting
+You don't need an account to browse or use the obfuscator. Create one if you want to upload scripts, leave comments, like, reply, and have a profile with your uploads.
+
+Usernames can be changed once a week. You can set a profile picture and bio.
+
+---
+
+## Comments
+
+Every script has a comment section. Leave feedback, ask questions, or let people know if something works. You can like comments and reply in threads.
 
 ---
 
@@ -89,5 +61,5 @@ Discord — **y4zr**
 ---
 
 <div align="center">
-<sub>Lunix v2.1 · 2026 · by yuki</sub>
+<sub>Lunix v3.0 · 2026 · by yuki</sub>
 </div>
